@@ -13,6 +13,12 @@ The time complexity of this program is O(9!), which is the number of possible
 Sudoku puzzles. The space complexity of this program is O(9^2), which is the
 space required to store the board."""
 
+# timeit.timeit('solve_sudoku(BOARD2)', globals=globals(), number=1000)
+# On 2018 MBP:
+#   Original list of list of int representation:   42 - 45 sec
+#   List of array of byte representation:          53 - 56 sec
+#   List of list; avoid duplication in is_valid(): 32 sec
+
 BOARD1 = [
     [5, 3, 0, 0, 7, 0, 0, 0, 0],
     [6, 0, 0, 1, 9, 5, 0, 0, 0],
@@ -64,21 +70,23 @@ def solve_sudoku(initial_board: list[list[int]]):
         """
 
         # Check the row.
-        for i in range(9):
-            if board[row][i] == num:
+        board_row = board[row]
+        for cell in board_row:
+            if cell == num:
                 return False
 
         # Check the column.
-        for i in range(9):
-            if board[i][col] == num:
+        for board_row in board:
+            if board_row[col] == num:
                 return False
 
         # Check the 3x3 block.
         row_start = row // 3 * 3
         col_start = col // 3 * 3
         for i in range(row_start, row_start + 3):
+            board_row = board[i]
             for j in range(col_start, col_start + 3):
-                if board[i][j] == num:
+                if board_row[j] == num:
                     return False
 
         return True
