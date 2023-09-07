@@ -1,0 +1,12 @@
+.idea/
+user/*
+
+*.cprof
+*.pyc
+__pycache__
+
+.DS_Store
+.DS_Store?
+._*
+.python-version
+.pytest_cache
