@@ -15,9 +15,17 @@ space required to store the board."""
 
 # timeit.timeit('solve_sudoku(BOARD2)', globals=globals(), number=1000)
 # On 2018 MBP:
-#   Original list of list of int representation:   42 - 45 sec
+#   Original list of list of int representation:   42 - 45 sec (42-45 msec/run)
 #   List of array of byte representation:          53 - 56 sec
-#   List of list; avoid duplication in is_valid(): 32 sec
+#   List of list; avoid repeat work in is_valid():      32 sec
+#   [Similarly avoiding repeat work in solve_sudoku_helper() only helped ≈3%.]
+
+# timeit.timeit('solve_sudoku(BOARD2)', globals=globals(), number=1000)
+# On 2018 MBP:
+#   List of list; avoid rework in is_valid():     211 sec
+
+# Idea: For hard cases, it might save time to set cells with only one
+# possibility (one pencil mark) before a backtracking pass.
 
 BOARD1 = [
     [5, 3, 0, 0, 7, 0, 0, 0, 0],
@@ -30,7 +38,7 @@ BOARD1 = [
     [0, 0, 0, 4, 1, 9, 0, 0, 5],
     [0, 0, 0, 0, 8, 0, 0, 7, 9]]
 
-BOARD2 = [
+BOARD2 = [  # "Annoying" level
     [3, 0, 0, 5, 8, 0, 0, 6, 0],
     [4, 0, 0, 0, 0, 0, 2, 0, 3],
     [0, 9, 0, 0, 2, 0, 0, 5, 0],
@@ -40,6 +48,17 @@ BOARD2 = [
     [0, 3, 0, 0, 7, 0, 0, 2, 0],
     [8, 0, 6, 0, 0, 0, 0, 0, 9],
     [0, 4, 0, 0, 3, 8, 0, 0, 7]]
+
+BOARD3 = [  # "Maelstrom" level
+    [7, 0, 0, 0, 8, 0, 4, 0, 1],
+    [4, 0, 8, 0, 0, 3, 0, 0, 0],
+    [0, 5, 0, 4, 0, 0, 3, 0, 0],
+    [0, 0, 0, 0, 2, 0, 0, 0, 9],
+    [0, 0, 7, 0, 3, 0, 1, 0, 0],
+    [1, 0, 0, 0, 4, 0, 0, 0, 0],
+    [0, 0, 4, 0, 0, 1, 0, 2, 0],
+    [0, 0, 0, 5, 0, 0, 7, 0, 4],
+    [2, 0, 6, 0, 9, 0, 0, 0, 5]]
 
 
 def solve_sudoku(initial_board: list[list[int]]):
