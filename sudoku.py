@@ -19,6 +19,8 @@ space required to store the board."""
 #   List of array of byte representation:          53 - 56 sec
 #   List of list; avoid repeat work in is_valid():      32 sec
 #   [Similarly avoiding repeat work in solve_sudoku_helper() only helped ≈3%.]
+#   numpy array of int8:                          742 sec [10 * number=100]
+#   numpy array of int32:                         733 sec [10 * number=100]
 
 # timeit.timeit('solve_sudoku(BOARD2)', globals=globals(), number=1000)
 # On 2018 MBP:
@@ -73,7 +75,7 @@ def solve_sudoku(initial_board: list[list[int]]):
       A solved Sudoku puzzle.
     """
 
-    def is_valid(board, row, col, num):
+    def is_valid(board: list[list[int]], row: int, col: int, num: int):
         """
         Checks if the given number is valid at the given row and column in the
         board.
@@ -110,7 +112,7 @@ def solve_sudoku(initial_board: list[list[int]]):
 
         return True
 
-    def solve_sudoku_helper(board):
+    def solve_sudoku_helper(board: list[list[int]]):
         """
         Recursive helper function to solve the Sudoku puzzle.
 
