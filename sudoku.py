@@ -19,6 +19,8 @@ space required to store the board."""
 #   List of array of byte representation:          53 - 56 sec
 #   List of list; avoid repeat work in is_valid():      32 sec
 #   [Similarly avoiding repeat work in solve_sudoku_helper() only helped ≈3%.]
+#   numpy array of int8:                          742 sec [10 * number=100]
+#   numpy array of int32:                         733 sec [10 * number=100]
 
 # timeit.timeit('solve_sudoku(BOARD2)', globals=globals(), number=1000)
 # On 2018 MBP:
@@ -26,6 +28,9 @@ space required to store the board."""
 
 # Idea: For hard cases, it might save time to set cells with only one
 # possibility (one pencil mark) before a backtracking pass.
+
+import numpy as np
+
 
 BOARD1 = [
     [5, 3, 0, 0, 7, 0, 0, 0, 0],
@@ -73,7 +78,7 @@ def solve_sudoku(initial_board: list[list[int]]):
       A solved Sudoku puzzle.
     """
 
-    def is_valid(board, row, col, num):
+    def is_valid(board: np.ndarray, row: int, col: int, num: int):
         """
         Checks if the given number is valid at the given row and column in the
         board.
@@ -89,28 +94,26 @@ def solve_sudoku(initial_board: list[list[int]]):
         """
 
         # Check the row.
-        board_row = board[row]
-        for cell in board_row:
-            if cell == num:
-                return False
+        row_mask = board[row, :] == num
+        if np.any(row_mask):
+            return False
 
         # Check the column.
-        for board_row in board:
-            if board_row[col] == num:
-                return False
+        col_mask = board[:, col] == num
+        if np.any(col_mask):
+            return False
 
         # Check the 3x3 block.
         row_start = row // 3 * 3
         col_start = col // 3 * 3
-        for i in range(row_start, row_start + 3):
-            board_row = board[i]
-            for j in range(col_start, col_start + 3):
-                if board_row[j] == num:
-                    return False
+        block_mask = board[row_start:row_start + 3,
+                           col_start:col_start + 3] == num
+        if np.any(block_mask):
+            return False
 
         return True
 
-    def solve_sudoku_helper(board):
+    def solve_sudoku_helper(board: np.ndarray):
         """
         Recursive helper function to solve the Sudoku puzzle.
 
@@ -123,24 +126,24 @@ def solve_sudoku(initial_board: list[list[int]]):
 
         for row in range(9):
             for col in range(9):
-                if board[row][col] == 0:
+                if board[row, col] == 0:
                     # Try each number from 1 to 9.
                     for num in range(1, 10):
                         if is_valid(board, row, col, num):
-                            board[row][col] = num
+                            board[row, col] = num
 
                             # Recursively solve the rest of the puzzle.
                             if solve_sudoku_helper(board):
                                 return True
 
                     # If none of the numbers work, the puzzle is unsolvable.
-                    board[row][col] = 0
+                    board[row, col] = 0
                     return False
 
         return True
 
-    # Make a working copy.
-    board = [row.copy() for row in initial_board]
+    # Make a working copy, converting to a numpy array.
+    board = np.array(initial_board, dtype=np.int32)
 
     # Solve the puzzle.
     solve_sudoku_helper(board)
