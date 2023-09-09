@@ -2,3 +2,4 @@ pip
 setuptools
 
 numpy
+pytest

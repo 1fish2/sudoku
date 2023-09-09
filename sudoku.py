@@ -21,6 +21,7 @@ space required to store the board."""
 #   [Similarly avoiding repeat work in solve_sudoku_helper() only helped ≈3%.]
 #   numpy array of int8:                          742 sec [10 * number=100]
 #   numpy array of int32:                         733 sec [10 * number=100]
+#   numpy array of int32 w/o np.any(mask):        862 sec [10 * number=100]
 
 # timeit.timeit('solve_sudoku(BOARD2)', globals=globals(), number=1000)
 # On 2018 MBP:
@@ -30,7 +31,6 @@ space required to store the board."""
 # possibility (one pencil mark) before a backtracking pass.
 
 import numpy as np
-
 
 BOARD1 = [
     [5, 3, 0, 0, 7, 0, 0, 0, 0],
@@ -94,22 +94,22 @@ def solve_sudoku(initial_board: list[list[int]]):
         """
 
         # Check the row.
-        row_mask = board[row, :] == num
-        if np.any(row_mask):
-            return False
+        for cell in board[row]:
+            if cell == num:
+                return False
 
         # Check the column.
-        col_mask = board[:, col] == num
-        if np.any(col_mask):
-            return False
+        for cell in board[:, col]:
+            if cell == num:
+                return False
 
         # Check the 3x3 block.
         row_start = row // 3 * 3
         col_start = col // 3 * 3
-        block_mask = board[row_start:row_start + 3,
-                           col_start:col_start + 3] == num
-        if np.any(block_mask):
-            return False
+        for board_row in board[row_start: row_start + 3]:
+            for cell in board_row[col_start: col_start + 3]:
+                if cell == num:
+                    return False
 
         return True
 
@@ -149,3 +149,20 @@ def solve_sudoku(initial_board: list[list[int]]):
     solve_sudoku_helper(board)
 
     return board
+
+
+def test_solver():
+    expected = [
+        [3, 2, 7, 5, 8, 4, 9, 6, 1],
+        [4, 6, 5, 9, 1, 7, 2, 8, 3],
+        [1, 9, 8, 3, 2, 6, 7, 5, 4],
+        [6, 5, 9, 2, 4, 3, 1, 7, 8],
+        [2, 8, 4, 7, 6, 1, 3, 9, 5],
+        [7, 1, 3, 8, 9, 5, 6, 4, 2],
+        [5, 3, 1, 4, 7, 9, 8, 2, 6],
+        [8, 7, 6, 1, 5, 2, 4, 3, 9],
+        [9, 4, 2, 6, 3, 8, 5, 1, 7],
+    ]
+    solution = solve_sudoku(BOARD2)
+    np.testing.assert_array_equal(solution, np.array(expected))
+
