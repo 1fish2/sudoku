@@ -17,7 +17,7 @@ space required to store the board."""
 # On 2018 MBP:
 #   Original list of list of int representation:   42 - 45 sec (42-45 msec/run)
 #   List of array of byte representation:          53 - 56 sec
-#   List of list; avoid repeat work in is_valid():      32 sec
+#   List of list; avoid repeat work in is_valid():      30 sec
 #   [Similarly avoiding repeat work in solve_sudoku_helper() only helped ≈3%.]
 #   numpy array of int8:                          742 sec [10 * number=100]
 #   numpy array of int32:                         733 sec [10 * number=100]
@@ -91,8 +91,7 @@ def solve_sudoku(initial_board: list[list[int]]):
         """
 
         # Check the row.
-        board_row = board[row]
-        for cell in board_row:
+        for cell in board[row]:
             if cell == num:
                 return False
 
@@ -104,10 +103,9 @@ def solve_sudoku(initial_board: list[list[int]]):
         # Check the 3x3 block.
         row_start = row // 3 * 3
         col_start = col // 3 * 3
-        for i in range(row_start, row_start + 3):
-            board_row = board[i]
-            for j in range(col_start, col_start + 3):
-                if board_row[j] == num:
+        for board_row in board[row_start:row_start + 3]:
+            for cell in board_row[col_start:col_start + 3]:
+                if cell == num:
                     return False
 
         return True
@@ -148,3 +146,19 @@ def solve_sudoku(initial_board: list[list[int]]):
     solve_sudoku_helper(board)
 
     return board
+
+
+def test_solver():
+    expected2 = [
+        [3, 2, 7, 5, 8, 4, 9, 6, 1],
+        [4, 6, 5, 9, 1, 7, 2, 8, 3],
+        [1, 9, 8, 3, 2, 6, 7, 5, 4],
+        [6, 5, 9, 2, 4, 3, 1, 7, 8],
+        [2, 8, 4, 7, 6, 1, 3, 9, 5],
+        [7, 1, 3, 8, 9, 5, 6, 4, 2],
+        [5, 3, 1, 4, 7, 9, 8, 2, 6],
+        [8, 7, 6, 1, 5, 2, 4, 3, 9],
+        [9, 4, 2, 6, 3, 8, 5, 1, 7],
+    ]
+    solution = solve_sudoku(BOARD2)
+    assert solution == expected2
